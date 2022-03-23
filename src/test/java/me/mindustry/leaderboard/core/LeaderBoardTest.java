@@ -65,10 +65,8 @@ public class LeaderBoardTest {
 
     final var leaderboardPlayerC = leaderboard.getPlayer(playerC);  // 0 points
 
-    System.out.println("LEADERBOARD A/" + leaderboardPlayerA + " B/" + leaderboardPlayerB + " C/" + leaderboardPlayerC);
-
     final var page = leaderboard.getPage(0, 2);
-    // assertEquals(2, page.size());
+    assertEquals(2, page.size());
     assertTrue(areCollectionEquals(List.of(leaderboardPlayerB, leaderboardPlayerA), page));
   }
 
@@ -81,8 +79,6 @@ public class LeaderBoardTest {
   }
 
   <T> boolean areCollectionEquals(final Collection<T> collectionA, final Collection<T> collectionB) {
-    System.out.println("A " + collectionA);
-    System.out.println("B " + collectionB);
     if (collectionA.size() != collectionB.size()) {
       return false;
     } else {

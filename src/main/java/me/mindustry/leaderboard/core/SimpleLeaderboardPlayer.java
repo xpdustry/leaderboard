@@ -23,13 +23,8 @@ final class SimpleLeaderboardPlayer implements LeaderboardPlayer {
   }
 
   @Override
-  public void applyPoints(long points) {
+  public void applyPoints(final long points) {
     this.points = Math.max(0, this.points + points);
-  }
-
-  @Override
-  public void applyPoints(@NotNull DefaultLeaderboardPoints point) {
-
   }
 
   @Override
