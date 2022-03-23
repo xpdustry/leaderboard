@@ -1,5 +1,5 @@
-import fr.xpdustry.toxopid.util.ModMetadata
 import fr.xpdustry.toxopid.extension.ModTarget
+import fr.xpdustry.toxopid.util.ModMetadata
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import java.io.ByteArrayOutputStream
@@ -25,9 +25,20 @@ toxopid {
 
 repositories {
     mavenCentral()
+    maven("https://repo.xpdustry.fr/releases") {
+        name = "xpdustry-releases-repository"
+        mavenContent { releasesOnly() }
+    }
 }
 
 dependencies {
+    // file-store for the configuration
+    implementation("net.mindustry_ddns:file-store:1.4.0")
+    // We will use the ConfigFileStore
+    implementation("org.aeonbits.owner:owner-java8:1.0.12")
+    // Indexed leaderboard librairy
+    implementation("com.googlecode.cqengine:cqengine:3.6.0")
+
     val junit = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
@@ -81,6 +92,13 @@ tasks.create("createRelease") {
             commandLine("git", "push", "origin", "--tags")
         }
     }
+}
+
+tasks.shadowJar {
+    val libsPackage = "${project.property("props.root-package")}.internal"
+    relocate("org.aeonbits.owner", "$libsPackage.owner")
+    relocate("net.mindustry_ddns.filestore", "$libsPackage.filestore")
+    relocate("com.google.gson", "$libsPackage.gson");
 }
 
 indra {

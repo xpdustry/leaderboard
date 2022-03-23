@@ -1,13 +1,13 @@
 {
-  "name": "xpdustry-template-plugin",
-  "displayName": "Xpdustry TemplatePlugin",
-  "author": "Xpdustry",
-  "description": "A template plugin for easier development, enjoy.",
-  "version": "2.3.2",
-  "minGameVersion": "v126.2",
+  "name": "omega-leader-board-plugin",
+  "displayName": "Omega LeaderBoard",
+  "author": "Omega",
+  "description": "Gives each player a rank based on their wins.",
+  "version": "2.0.0",
+  "minGameVersion": "v135",
   "hidden": true,
   "java": true,
-  "main": "fr.xpdustry.template.TemplatePlugin",
-  "repo": "Xpdustry/TemplatePlugin",
+  "main": "me.mindustry.leaderboard.LeaderboardPlugin",
+  "repo": "Xpdustry/OmegaLeaderboardPlugin",
   "dependencies": []
 }
