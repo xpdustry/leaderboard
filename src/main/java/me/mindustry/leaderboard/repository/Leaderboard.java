@@ -7,12 +7,20 @@ import org.jetbrains.annotations.*;
 
 public interface Leaderboard {
 
-  static Leaderboard simple() {
+  static @NotNull Leaderboard simple() {
     return new SimpleLeaderboard();
   }
 
-  static Leaderboard sqlite(final @NotNull File file) {
-    return new SQLiteLeaderboard(file);
+  static @NotNull Leaderboard sqlite(final @NotNull File file) {
+    return new SQLLeaderboard(file);
+  }
+
+  static @NotNull Leaderboard sql(final @NotNull String url, final @Nullable String username, final @Nullable String password, final @NotNull String table) {
+    return new SQLLeaderboard(url, username, password, table);
+  }
+
+  static @NotNull Leaderboard sql(final @NotNull String url, final @Nullable String username, final @Nullable String password) {
+    return new SQLLeaderboard(url, username, password);
   }
 
   /**
@@ -44,6 +52,8 @@ public interface Leaderboard {
 
   /**
    * Updates the leaderboard player.
+   * <p>
+   * If the player does not exist, it is created instead.
    *
    * @param player the leaderboard player
    */

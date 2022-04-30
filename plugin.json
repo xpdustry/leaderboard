@@ -2,7 +2,7 @@
   "name": "omega-leaderboard",
   "displayName": "Omega Leaderboard",
   "author": "Omega",
-  "description": "Gives each player a rank based on their wins.",
+  "description": "A simple leaderboard system for players.",
   "version": "3.0.0",
   "minGameVersion": "v135",
   "hidden": true,

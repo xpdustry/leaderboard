@@ -7,7 +7,7 @@ import org.jetbrains.annotations.*;
 
 public interface LeaderboardService {
 
-  static LeaderboardService simple(final @NotNull Leaderboard leaderboard) {
+  static @NotNull LeaderboardService simple(final @NotNull Leaderboard leaderboard) {
     return new SimpleLeaderboardService(leaderboard);
   }
 
@@ -27,7 +27,7 @@ public interface LeaderboardService {
     if (!getLeaderboard().hasPlayer(uuid)) return -1;
     final var sorted = getLeaderboard().getPlayers();
     for (int i = 0; i < sorted.size(); i++) {
-      if (sorted.get(i).getUuid().equals(uuid)) return i;
+      if (sorted.get(i).getUuid().equals(uuid)) return i + 1;
     }
     throw new IllegalStateException();
   }

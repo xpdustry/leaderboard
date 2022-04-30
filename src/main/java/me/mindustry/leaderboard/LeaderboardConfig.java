@@ -1,14 +1,15 @@
 package me.mindustry.leaderboard;
 
 import org.aeonbits.owner.*;
+import org.jetbrains.annotations.*;
 
 public interface LeaderboardConfig extends Accessible {
 
   @DefaultValue("PERSISTENT")
   @Key("leaderboard.type")
-  LeaderboardType getLeaderboardType();
+  @NotNull LeaderboardType getLeaderboardType();
 
   enum LeaderboardType {
-    IN_MEMORY, PERSISTENT
+    IN_MEMORY, PERSISTENT, CUSTOM
   }
 }

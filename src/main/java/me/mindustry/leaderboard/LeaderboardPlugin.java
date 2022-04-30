@@ -3,9 +3,10 @@ package me.mindustry.leaderboard;
 import arc.*;
 import arc.files.*;
 import arc.util.*;
-import com.j256.ormlite.logger.*;
 import io.leangen.geantyref.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.*;
 import me.mindustry.leaderboard.repository.*;
 import me.mindustry.leaderboard.service.*;
 import mindustry.*;
@@ -22,37 +23,39 @@ import rhino.*;
 @SuppressWarnings("unused")
 public final class LeaderboardPlugin extends Plugin {
 
+  private static final Fi LEADERBOARD_DIRECTORY = new Fi("./leaderboard");
   private static final String LEADERBOARD_ENABLED_KEY = "omega-leaderboard:active";
 
-  private final Fi leaderboardDirectory = new Fi("./leaderboard");
   private final Store<LeaderboardConfig> store = FileStore.of(
-    leaderboardDirectory.child("config.properties").file(),
+    LEADERBOARD_DIRECTORY.child("config.properties").file(),
     Serializers.config(),
-    new TypeToken<>(){},
+    new TypeToken<>() {},
     ConfigFactory.create(LeaderboardConfig.class)
   );
 
   @SuppressWarnings("NullAway.Init")
-  private Leaderboard leaderboard;
-  @SuppressWarnings("NullAway.Init")
   private LeaderboardService service;
+  private Supplier<Leaderboard> customLeaderboardProvider = () -> {
+    throw new IllegalStateException("The custom leaderboard provider hasn't been set.");
+  };
+  private Function<Leaderboard, LeaderboardService> leaderboardServiceFactory = LeaderboardService::simple;
 
   @Override
   public void init() {
-    leaderboardDirectory.mkdirs();
+    LEADERBOARD_DIRECTORY.mkdirs();
     store.load();
-    Logger.setGlobalLogLevel(Level.ERROR);
 
-    leaderboard = switch (getConf().getLeaderboardType()) {
+    final var leaderboard = switch (getConf().getLeaderboardType()) {
       case IN_MEMORY -> Leaderboard.simple();
-      case PERSISTENT -> Leaderboard.sqlite(leaderboardDirectory.child("leaderboard.db").file());
+      case PERSISTENT -> Leaderboard.sqlite(LEADERBOARD_DIRECTORY.child("leaderboard.db").file());
+      case CUSTOM -> customLeaderboardProvider.get();
     };
 
-    service = LeaderboardService.simple(leaderboard);
+    service = leaderboardServiceFactory.apply(leaderboard);
 
     // Puts the plugin in the script scope
     final Scriptable scope = Reflect.get(Vars.mods.getScripts(), "scope");
-    ScriptableObject.putConstProperty(scope, "lb", this);
+    ScriptableObject.putConstProperty(scope, "lb", service);
 
     Events.on(BlockDestroyEvent.class, e -> {
       if (isEnabled() && Vars.state.rules.pvp && e.tile.build instanceof CoreBlock.CoreBuild build) {
@@ -115,7 +118,7 @@ public final class LeaderboardPlugin extends Plugin {
           player.sendMessage(Strings.format("The leaderboard is now @.", isEnabled() ? "enabled" : "disabled"));
         }
       } else {
-        player.sendMessage("[red]Only an admin can use this command");
+        player.sendMessage("[red]Only an admin can use this command.");
       }
     });
 
@@ -136,12 +139,20 @@ public final class LeaderboardPlugin extends Plugin {
     });
   }
 
-  public Leaderboard getLeaderboard() {
-    return leaderboard;
-  }
-
   public LeaderboardService getLeaderboardService() {
     return service;
+  }
+
+  public void setCustomLeaderboardProvider(final @NotNull Supplier<@NotNull Leaderboard> customLeaderboardProvider) {
+    this.customLeaderboardProvider = customLeaderboardProvider;
+  }
+
+  public Function<Leaderboard, LeaderboardService> getLeaderboardServiceFactory() {
+    return leaderboardServiceFactory;
+  }
+
+  public void setLeaderboardServiceFactory(final @NotNull Function<Leaderboard, @NotNull LeaderboardService> leaderboardServiceFactory) {
+    this.leaderboardServiceFactory = leaderboardServiceFactory;
   }
 
   public @NotNull LeaderboardConfig getConf() {

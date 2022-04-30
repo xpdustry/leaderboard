@@ -1,7 +1,9 @@
 package me.mindustry.leaderboard.repository;
 
 import com.j256.ormlite.dao.*;
+import com.j256.ormlite.field.*;
 import com.j256.ormlite.jdbc.*;
+import com.j256.ormlite.logger.*;
 import com.j256.ormlite.table.*;
 import java.io.*;
 import java.sql.*;
@@ -9,18 +11,44 @@ import java.util.*;
 import me.mindustry.leaderboard.model.*;
 import org.jetbrains.annotations.*;
 
-final class SQLiteLeaderboard implements Leaderboard {
+final class SQLLeaderboard implements Leaderboard {
+
+  private static final String DEFAULT_TABLE = "leaderboard_player";
+
+  static {
+    Logger.setGlobalLogLevel(Level.ERROR);
+  }
 
   private final Dao<LeaderboardPlayer, String> dao;
 
-  SQLiteLeaderboard(final @NotNull File file) {
+  SQLLeaderboard(final @NotNull String url, final @Nullable String username, final @Nullable String password, final @NotNull String table) {
     try {
-      final var connectionSource = new JdbcConnectionSource("jdbc:sqlite:" + file.getAbsolutePath());
-      this.dao = DaoManager.createDao(connectionSource, LeaderboardPlayer.class);
-      TableUtils.createTableIfNotExists(connectionSource, LeaderboardPlayer.class);
+      final var source = new JdbcConnectionSource(url, username, password);
+
+      final var uuidField = new DatabaseFieldConfig("uuid");
+      uuidField.setId(true);
+      uuidField.setCanBeNull(false);
+
+      final var scoreField = new DatabaseFieldConfig("points");
+      scoreField.setCanBeNull(false);
+
+      dao = DaoManager.createDao(
+        source,
+        new DatabaseTableConfig<>(LeaderboardPlayer.class, table, List.of(uuidField, scoreField))
+      );
+
+      TableUtils.createTableIfNotExists(source, LeaderboardPlayer.class);
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  SQLLeaderboard(final @NotNull String url, final @Nullable String username, final @Nullable String password) {
+    this(url, username, password, DEFAULT_TABLE);
+  }
+
+  SQLLeaderboard(final @NotNull File file) {
+    this("jdbc:sqlite:" + file.getAbsolutePath(), null, null, DEFAULT_TABLE);
   }
 
   @Override
@@ -33,7 +61,7 @@ final class SQLiteLeaderboard implements Leaderboard {
   }
 
   @Override
-  public @NotNull LeaderboardPlayer addPlayer(@NotNull String uuid) {
+  public @NotNull LeaderboardPlayer addPlayer(final @NotNull String uuid) {
     try {
       return dao.createIfNotExists(LeaderboardPlayer.of(uuid));
     } catch (final SQLException e) {
@@ -42,7 +70,7 @@ final class SQLiteLeaderboard implements Leaderboard {
   }
 
   @Override
-  public @Nullable LeaderboardPlayer getPlayer(@NotNull String uuid) {
+  public @Nullable LeaderboardPlayer getPlayer(final @NotNull String uuid) {
     try {
       return dao.queryForId(uuid);
     } catch (final SQLException e) {
@@ -51,12 +79,12 @@ final class SQLiteLeaderboard implements Leaderboard {
   }
 
   @Override
-  public boolean hasPlayer(@NotNull String uuid) {
+  public boolean hasPlayer(final @NotNull String uuid) {
     return getPlayer(uuid) != null;
   }
 
   @Override
-  public void removePlayer(@NotNull String uuid) {
+  public void removePlayer(final @NotNull String uuid) {
     try {
       dao.deleteById(uuid);
     } catch (final SQLException e) {
@@ -65,9 +93,9 @@ final class SQLiteLeaderboard implements Leaderboard {
   }
 
   @Override
-  public void updatePlayer(@NotNull LeaderboardPlayer player) {
+  public void updatePlayer(final @NotNull LeaderboardPlayer player) {
     try {
-      dao.update(player);
+      dao.createOrUpdate(player);
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }

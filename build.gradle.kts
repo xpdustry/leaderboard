@@ -39,6 +39,9 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.36.0.3")   // Driver
     implementation("com.j256.ormlite:ormlite-jdbc:6.1") // ORM
 
+    // compileOnly("org.immutables:value:2.9.0")
+    // annotationProcessor("org.immutables:value:2.9.0")
+
     val junit = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")

@@ -1,35 +1,31 @@
 package me.mindustry.leaderboard.model;
 
 import arc.util.*;
-import com.j256.ormlite.field.*;
-import com.j256.ormlite.table.*;
 import java.io.*;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.*;
 
-@DatabaseTable(tableName = "players")
 public final class LeaderboardPlayer implements Serializable, Comparable<LeaderboardPlayer> {
 
   @java.io.Serial
   private static final long serialVersionUID = 1L;
 
-  @DatabaseField(columnName = "uuid", canBeNull = false, id = true)
   private final String uuid;
-
-  @DatabaseField(columnName = "points", canBeNull = false)
   private long points = 0;
-
-  /**
-   * No args constructor for the SQLite library, DO NOT USE.
-   */
-  LeaderboardPlayer() {
-    this.uuid = "";
-  }
 
   private LeaderboardPlayer(final @NotNull String uuid) {
     this.uuid = uuid;
   }
 
-  public static LeaderboardPlayer of(final @NotNull String uuid) {
+  /**
+   * No args constructor for ORMLite, <strong>DO NOT USE</strong>.
+   */
+  @SuppressWarnings("unused")
+  LeaderboardPlayer() {
+    this.uuid = "";
+  }
+
+  public static @NotNull LeaderboardPlayer of(final @NotNull String uuid) {
     return new LeaderboardPlayer(uuid);
   }
 
@@ -55,17 +51,16 @@ public final class LeaderboardPlayer implements Serializable, Comparable<Leaderb
   }
 
   @Override
-  public String toString() {
+  public @NotNull String toString() {
     return Strings.format("SimpleLeaderboardPlayer{uuid='@', points='@'}", uuid, points);
   }
 
   @Override
-  public boolean equals(final Object o) {
+  public boolean equals(final @Nullable Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    LeaderboardPlayer that = (LeaderboardPlayer) o;
-    if (points != that.points) return false;
-    return uuid.equals(that.uuid);
+    final LeaderboardPlayer that = (LeaderboardPlayer) o;
+    return uuid.equals(that.uuid) && points == that.points;
   }
 
   @Override
