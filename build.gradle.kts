@@ -33,11 +33,11 @@ repositories {
 
 dependencies {
     // file-store for the configuration
-    implementation("net.mindustry_ddns:file-store:1.4.0")
-    // We will use the ConfigFileStore
+    implementation("net.mindustry_ddns:file-store:2.1.0")
     implementation("org.aeonbits.owner:owner-java8:1.0.12")
-    // Indexed leaderboard librairy
-    implementation("com.googlecode.cqengine:cqengine:3.6.0")
+    // Persistent leaderboard with sqlite
+    implementation("org.xerial:sqlite-jdbc:3.36.0.3")   // Driver
+    implementation("com.j256.ormlite:ormlite-jdbc:6.1") // ORM
 
     val junit = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junit")
@@ -49,8 +49,8 @@ dependencies {
     testCompileOnly("org.jetbrains:annotations:$jetbrains")
 
     // Static analysis
-    annotationProcessor("com.uber.nullaway:nullaway:0.9.5")
-    errorprone("com.google.errorprone:error_prone_core:2.11.0")
+    annotationProcessor("com.uber.nullaway:nullaway:0.9.6")
+    errorprone("com.google.errorprone:error_prone_core:2.13.1")
 }
 
 tasks.withType(JavaCompile::class.java).configureEach {
@@ -96,9 +96,13 @@ tasks.create("createRelease") {
 
 tasks.shadowJar {
     val libsPackage = "${project.property("props.root-package")}.internal"
-    relocate("org.aeonbits.owner", "$libsPackage.owner")
+    relocate("com.j256.ormlite", "$libsPackage.ormlite")
+    relocate("io.leangen.geantyref", "$libsPackage.geantyref")
     relocate("net.mindustry_ddns.filestore", "$libsPackage.filestore")
-    relocate("com.google.gson", "$libsPackage.gson");
+    relocate("org.aeonbits.owner", "$libsPackage.owner")
+    minimize {
+        exclude(dependency("org.xerial:sqlite-jdbc:.*"))
+    }
 }
 
 indra {

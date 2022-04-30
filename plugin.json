@@ -1,9 +1,9 @@
 {
-  "name": "omega-leader-board-plugin",
-  "displayName": "Omega LeaderBoard",
+  "name": "omega-leaderboard",
+  "displayName": "Omega Leaderboard",
   "author": "Omega",
   "description": "Gives each player a rank based on their wins.",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "minGameVersion": "v135",
   "hidden": true,
   "java": true,

@@ -1,4 +1,4 @@
-package me.mindustry.leaderboard.internal;
+package me.mindustry.leaderboard;
 
 import org.aeonbits.owner.*;
 
@@ -9,6 +9,6 @@ public interface LeaderboardConfig extends Accessible {
   LeaderboardType getLeaderboardType();
 
   enum LeaderboardType {
-    IN_MEMORY, INDEXED, PERSISTENT
+    IN_MEMORY, PERSISTENT
   }
 }
