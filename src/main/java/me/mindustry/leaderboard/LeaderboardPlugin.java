@@ -129,7 +129,7 @@ public final class LeaderboardPlugin extends Plugin {
         player.sendMessage(
           Strings.format(
             "Rank: @, Points: @",
-            rank == -1 ? "None" : rank + 1,
+            rank == -1 ? "None" : rank,
             leaderboardPlayer != null ? leaderboardPlayer.getPoints() : 0
           )
         );
