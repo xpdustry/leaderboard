@@ -3,6 +3,7 @@ package me.mindustry.leaderboard.repository;
 import java.nio.file.*;
 import java.util.*;
 import me.mindustry.leaderboard.*;
+import me.mindustry.leaderboard.model.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.*;
 import org.junit.jupiter.params.*;
@@ -11,6 +12,9 @@ import org.junit.jupiter.params.provider.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public final class LeaderboardTest {
+
+  private static final LeaderboardPoints POINTS_A = LeaderboardPoints.of("A", +100);
+  private static final LeaderboardPoints POINTS_B = LeaderboardPoints.of("B", +50);
 
   private String playerA;
   private String playerB;
@@ -64,13 +68,13 @@ public final class LeaderboardTest {
   void test_leaderboard_order(final String type) {
     final var leaderboard = getLeaderboard(type);
 
-    final var leaderboardPlayerA = leaderboard.addPlayer(playerA);  // 900 points
-    leaderboardPlayerA.addPoints(StandardLeaderboardPoints.PVP_VICTORY);
-    leaderboardPlayerA.addPoints(StandardLeaderboardPoints.DESTROYED_CORE);
+    final var leaderboardPlayerA = leaderboard.addPlayer(playerA);  // 50 points
+    leaderboardPlayerA.addPoints(POINTS_B);
     leaderboard.updatePlayer(leaderboardPlayerA);
 
-    final var leaderboardPlayerB = leaderboard.addPlayer(playerB);  // 1000 points
-    leaderboardPlayerB.addPoints(StandardLeaderboardPoints.PVP_VICTORY);
+    final var leaderboardPlayerB = leaderboard.addPlayer(playerB);  // 150 points
+    leaderboardPlayerB.addPoints(POINTS_A);
+    leaderboardPlayerB.addPoints(POINTS_B);
     leaderboard.updatePlayer(leaderboardPlayerB);
 
     final var leaderboardPlayerC = leaderboard.addPlayer(playerC);  // 0 points
@@ -117,7 +121,7 @@ public final class LeaderboardTest {
   Leaderboard getLeaderboard(final String type) {
     return switch (type) {
       case "IN_MEMORY" -> Leaderboard.simple();
-      case "PERSISTENT" -> Leaderboard.sqlite(tempDir.resolve("data.db").toFile());
+      case "PERSISTENT" -> Leaderboard.sqlite(tempDir.resolve("data.sqlite").toFile());
       default -> throw new IllegalArgumentException("Unexpected leaderboard type: " + type);
     };
   }

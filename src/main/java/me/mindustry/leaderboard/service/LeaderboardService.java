@@ -21,10 +21,10 @@ public interface LeaderboardService {
    * Returns the rank of a leaderboard player.
    *
    * @param uuid the uuid of the leaderboard player
-   * @return the rank of the leaderboard player or -1 if it does not exist in the leaderboard
+   * @return the rank of the leaderboard player
    */
   default int getRank(final @NotNull String uuid) {
-    if (!getLeaderboard().hasPlayer(uuid)) return -1;
+    if (!getLeaderboard().hasPlayer(uuid)) getLeaderboard().addPlayer(uuid);
     final var sorted = getLeaderboard().getPlayers();
     for (int i = 0; i < sorted.size(); i++) {
       if (sorted.get(i).getUuid().equals(uuid)) return i + 1;

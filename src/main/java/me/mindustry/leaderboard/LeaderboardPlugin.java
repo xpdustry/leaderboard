@@ -3,8 +3,8 @@ package me.mindustry.leaderboard;
 import arc.*;
 import arc.files.*;
 import arc.util.*;
+import fr.xpdustry.flex.*;
 import io.leangen.geantyref.*;
-import java.util.*;
 import java.util.function.Function;
 import java.util.function.*;
 import me.mindustry.leaderboard.repository.*;
@@ -13,7 +13,6 @@ import mindustry.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.mod.*;
-import mindustry.world.blocks.storage.*;
 import net.mindustry_ddns.filestore.*;
 import net.mindustry_ddns.filestore.serial.*;
 import org.aeonbits.owner.*;
@@ -35,10 +34,10 @@ public final class LeaderboardPlugin extends Plugin {
 
   @SuppressWarnings("NullAway.Init")
   private LeaderboardService service;
+  private Function<Leaderboard, LeaderboardService> leaderboardServiceFactory = LeaderboardService::simple;
   private Supplier<Leaderboard> customLeaderboardProvider = () -> {
     throw new IllegalStateException("The custom leaderboard provider hasn't been set.");
   };
-  private Function<Leaderboard, LeaderboardService> leaderboardServiceFactory = LeaderboardService::simple;
 
   @Override
   public void init() {
@@ -47,7 +46,7 @@ public final class LeaderboardPlugin extends Plugin {
 
     final var leaderboard = switch (getConf().getLeaderboardType()) {
       case IN_MEMORY -> Leaderboard.simple();
-      case PERSISTENT -> Leaderboard.sqlite(LEADERBOARD_DIRECTORY.child("leaderboard.db").file());
+      case PERSISTENT -> Leaderboard.sqlite(LEADERBOARD_DIRECTORY.child("leaderboard.sqlite").file());
       case CUSTOM -> customLeaderboardProvider.get();
     };
 
@@ -57,85 +56,22 @@ public final class LeaderboardPlugin extends Plugin {
     final Scriptable scope = Reflect.get(Vars.mods.getScripts(), "scope");
     ScriptableObject.putConstProperty(scope, "lb", service);
 
-    Events.on(BlockDestroyEvent.class, e -> {
-      if (isEnabled() && Vars.state.rules.pvp && e.tile.build instanceof CoreBlock.CoreBuild build) {
-        Groups.player.each(
-          p -> p.team() == build.team(),
-          p -> service.grantPoints(p, StandardLeaderboardPoints.DESTROYED_CORE)
-        );
-      }
-    });
+    Events.on(PlayerJoin.class, e -> showLeaderboard(e.player));
 
-    Events.on(BlockBuildEndEvent.class, e -> {
-      if (isEnabled() && e.unit.isPlayer()) {
-        service.grantPoints(e.unit.getPlayer(), StandardLeaderboardPoints.BUILD_BLOCK);
-      }
-    });
-
-    Events.on(GameOverEvent.class, e -> {
-      if (isEnabled() && Vars.state.rules.pvp) {
-        Groups.player.each(
-          p -> p.team() == e.winner,
-          p -> service.grantPoints(p, StandardLeaderboardPoints.PVP_VICTORY)
-        );
-      }
-    });
-
-    Events.on(PlayerJoin.class, e -> {
-      if (isEnabled()) {
-        final var popup = new StringBuilder().append("[yellow]Leader Board:[]");
-        final var players = service.getLeaderboard().getPlayers();
-        for (int i = 0; i < Math.min(10, players.size()); i++) {
-          final var leaderboardPlayer = players.get(i);
-          final String playerName;
-
-          final var localPlayer = Groups.player.find(p -> p.uuid().equals(leaderboardPlayer.getUuid()));
-          if (localPlayer != null) {
-            playerName = localPlayer.name();
-          } else {
-            playerName = Vars.netServer.admins.getInfo(leaderboardPlayer.getUuid()).lastName;
-          }
-
-          popup.append("\n#").append(i);
-          popup.append(" [white]: ").append(playerName).append(" - ").append(leaderboardPlayer.getPoints());
-        }
-        Call.infoToast(e.player.con, popup.toString(), 10f);
-      }
-    });
+    addRegistry(OmegaLeaderboardPoints.INSTANCE);
+    FlexPlugin.registerFlexExtension(new LeaderboardFlexExtension(service));
   }
 
   @Override
   public void registerClientCommands(final @NotNull CommandHandler handler) {
-    handler.<Player>register("lb-status", "[status]", "Enable/Disable the leaderboard.", (args, player) -> {
-      if (player.admin()) {
-        if (args.length == 0) {
-          player.sendMessage(Strings.format("The leaderboard is currently @.", isEnabled() ? "enabled" : "disabled"));
-        } else {
-          switch (args[0].toLowerCase(Locale.ROOT)) {
-            case "true", "active", "enable" -> setEnabled(true);
-            case "false", "inactive", "disable" -> setEnabled(false);
-          }
-          player.sendMessage(Strings.format("The leaderboard is now @.", isEnabled() ? "enabled" : "disabled"));
-        }
-      } else {
-        player.sendMessage("[red]Only an admin can use this command.");
-      }
+    handler.<Player>register("lb-rank", "Get your leaderboard status.", (args, player) -> {
+      final var leaderboardPlayer = service.getLeaderboard().addPlayer(player.uuid());
+      final var rank = service.getRank(player);
+      player.sendMessage(Strings.format("Rank: @, Points: @", rank, leaderboardPlayer.getPoints()));
     });
 
-    handler.<Player>register("lb-rank", "Get your leaderboard status.", (args, player) -> {
-      if (isEnabled()) {
-        final var leaderboardPlayer = service.getLeaderboard().getPlayer(player.uuid());
-        final var rank = service.getRank(player);
-        player.sendMessage(
-          Strings.format(
-            "Rank: @, Points: @",
-            rank == -1 ? "None" : rank,
-            leaderboardPlayer != null ? leaderboardPlayer.getPoints() : 0
-          )
-        );
-      } else {
-        player.sendMessage("[red]The leaderboard is currently disabled.");
-      }
+    handler.<Player>register("lb-board", "Show the leaderboard", (args, player) -> {
+      showLeaderboard(player);
     });
   }
 
@@ -159,11 +95,27 @@ public final class LeaderboardPlugin extends Plugin {
     return store.get();
   }
 
-  public boolean isEnabled() {
-    return Core.settings.getBool(LEADERBOARD_ENABLED_KEY, false);
+  public void addRegistry(final @NotNull LeaderboardPointsRegistry registry) {
+    registry.registerLeaderboardPoints(service);
   }
 
-  public void setEnabled(final boolean active) {
-    Core.settings.put(LEADERBOARD_ENABLED_KEY, active);
+  private void showLeaderboard(final @NotNull Player player) {
+    final var popup = new StringBuilder().append("[yellow]Leader Board:[]");
+    final var players = service.getLeaderboard().getPlayers();
+    for (int i = 0; i < Math.min(10, players.size()); i++) {
+      final var leaderboardPlayer = players.get(i);
+      final String playerName;
+
+      final var localPlayer = Groups.player.find(p -> p.uuid().equals(leaderboardPlayer.getUuid()));
+      if (localPlayer != null) {
+        playerName = localPlayer.name();
+      } else {
+        playerName = Vars.netServer.admins.getInfo(leaderboardPlayer.getUuid()).lastName;
+      }
+
+      popup.append("\n#").append(i + 1);
+      popup.append(" [white]: ").append(playerName).append(" - ").append(leaderboardPlayer.getPoints());
+    }
+    Call.infoToast(player.con, popup.toString(), 10f);
   }
 }

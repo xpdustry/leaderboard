@@ -6,21 +6,7 @@
 
 ## Description
 
-This template features some cool stuff such as :
-
-- [Jitpack](https://jitpack.io/) support.
-
-- GitHub action for easier release and Jitpack usage:
-
-  - To create a new release, edit `CHANGELOG.md` and then run `./gradlew createRelease`, it will automatically create
-    a release tag and push it to trigger the release workflow. If you pushed your release by mistake, simply run this
-    in your terminal:
-
-    ```batch
-    # https://stackoverflow.com/a/5480292/15861283
-    git push --delete origin v{release-version}
-    git tag -d v{release-version}
-    ```
+Leaderboard plugin for Omega servers.
 
 ## Building
 
@@ -36,24 +22,6 @@ This template features some cool stuff such as :
 
 ## Running
 
-This plugin is compatible with V6 and V7.
+This plugin is compatible with V6 and V7, but it requires [Flex](https://github.com/Xpdustry/Flex) as dependency.
 
-## Nice tips
-
-- When using this template, don't forget to change `plugin.json` and `gradle.properties`.
-
-- This template targets V6 by default, you can change it by editing `minGameVersion` in `plugin.json`.
-
-- Don't forget to edit `props.root-package` in `gradle.properties` to enable NullAway.
-
-- To make sure gradle is always executable do :
-
-```batch
-# https://stackoverflow.com/a/54048315/15861283
-git update-index --chmod=+x gradlew
-git add .
-git commit -m "Changing permission of gradlew"
-git push
-```
-
-- Don't forget to bump your dependencies with the `dependencyUpdates` task.
+> If you run Mindustry below v136, you will need an additional mod called [mod-loader](https://github.com/Xpdustry/ModLoaderPlugin) for the dependency resolution.
