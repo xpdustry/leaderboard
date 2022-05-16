@@ -126,7 +126,7 @@ indra {
 
     mitLicense()
 
-    publishReleasesTo("xpdustry", "https://repo.xpdustry.fr/private")
+    publishReleasesTo("omega", "https://repo.xpdustry.fr/private")
 
     if (metadata.repo != null) {
         val repo = metadata.repo!!.split("/")
