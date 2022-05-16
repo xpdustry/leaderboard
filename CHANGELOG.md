@@ -1,5 +1,3 @@
-- Add V6 support
+- Removed standard points.
 
-- Add Flex support
-
-- Random optimizations
+- Random optimizations.
