@@ -9,6 +9,10 @@ public interface LeaderboardConfig extends Accessible {
   @Key("leaderboard.type")
   @NotNull LeaderboardType getLeaderboardType();
 
+  @DefaultValue("true")
+  @Key("leaderboard.player.show-on-join")
+  boolean showLeaderboardOnJoin();
+
   enum LeaderboardType {
     IN_MEMORY, PERSISTENT, CUSTOM
   }

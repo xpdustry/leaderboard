@@ -16,7 +16,7 @@ final class LeaderboardFlexExtension implements FlexExtension {
   @Override
   public @Nullable String handleFlexString(final @NotNull String handler, final @NotNull Player player) {
     if (handler.equals("omega-leaderboard:rank")) {
-      return Integer.toString(service.getRank(player));
+      return Long.toString(service.getRank(player));
     } else {
       return null;
     }

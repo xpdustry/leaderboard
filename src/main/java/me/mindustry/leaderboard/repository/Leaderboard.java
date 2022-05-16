@@ -24,48 +24,30 @@ public interface Leaderboard {
   }
 
   /**
-   * Returns an unmodifiable ordered list of the leaderboard players from the highest score to the lowest.
-   */
-  @NotNull List<LeaderboardPlayer> getPlayers();
-
-  /**
-   * Creates a new leaderboard player.
-   * <p>
-   * If the leaderboard player already exists for the given player, it's returned.
+   * Saves the leaderboard player.
    *
-   * @param uuid the uuid of the player
-   * @return the leaderboard player
+   * @param player the leaderboard player
    */
-  @NotNull LeaderboardPlayer addPlayer(final @NotNull String uuid);
+  void savePlayer(final @NotNull LeaderboardPlayer player);
+
+  boolean existsPlayerByUuid(final @NotNull String uuid);
 
   /**
    * Searches for the uuid of a leaderboard player.
    *
    * @param uuid the uuid of the leaderboard player
-   * @return the leaderboard player if it exists, otherwise null
+   * @return an optional encapsulating the leaderboard player
    */
-  @Nullable LeaderboardPlayer getPlayer(final @NotNull String uuid);
-
-  boolean hasPlayer(final @NotNull String uuid);
-
-  void removePlayer(final @NotNull String uuid);
+  @NotNull Optional<LeaderboardPlayer> findPlayerByUuid(final @NotNull String uuid);
 
   /**
-   * Updates the leaderboard player.
-   * <p>
-   * If the player does not exist, it is created instead.
-   *
-   * @param player the leaderboard player
+   * Returns an ordered iterable of the leaderboard players from the highest score to the lowest.
    */
-  void updatePlayer(final @NotNull LeaderboardPlayer player);
+  @NotNull Iterable<LeaderboardPlayer> findAllPlayers();
 
-  /**
-   * Resets the leaderboard.
-   */
-  void reset();
+  long countPlayers();
 
-  /**
-   * Returns the number of leaderboard players.
-   */
-  int getSize();
+  void deletePlayerByUuid(final @NotNull String uuid);
+
+  void deleteAllPlayers();
 }

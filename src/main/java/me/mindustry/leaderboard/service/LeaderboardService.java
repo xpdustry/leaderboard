@@ -11,28 +11,23 @@ public interface LeaderboardService {
     return new SimpleLeaderboardService(leaderboard);
   }
 
-  @NotNull Leaderboard getLeaderboard();
+  long getPoints(final @NotNull String uuid);
 
-  void grantPoints(final @NotNull Player player, final @NotNull LeaderboardPoints points);
+  default long getPoints(final @NotNull Player player) {
+    return getPoints(player.uuid());
+  }
 
   void grantPoints(final @NotNull String uuid, final @NotNull LeaderboardPoints points);
 
-  /**
-   * Returns the rank of a leaderboard player.
-   *
-   * @param uuid the uuid of the leaderboard player
-   * @return the rank of the leaderboard player
-   */
-  default int getRank(final @NotNull String uuid) {
-    if (!getLeaderboard().hasPlayer(uuid)) getLeaderboard().addPlayer(uuid);
-    final var sorted = getLeaderboard().getPlayers();
-    for (int i = 0; i < sorted.size(); i++) {
-      if (sorted.get(i).getUuid().equals(uuid)) return i + 1;
-    }
-    throw new IllegalStateException();
+  default void grantPoints(final @NotNull Player player, final @NotNull LeaderboardPoints points) {
+    grantPoints(player.uuid(), points);
   }
 
-  default int getRank(final @NotNull Player player) {
+  long getRank(final @NotNull String uuid);
+
+  default long getRank(final @NotNull Player player) {
     return getRank(player.uuid());
   }
+
+  void showLeaderboard(final @NotNull Player player);
 }

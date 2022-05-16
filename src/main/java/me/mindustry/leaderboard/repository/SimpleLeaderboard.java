@@ -12,43 +12,39 @@ final class SimpleLeaderboard implements Leaderboard {
   }
 
   @Override
-  public @NotNull List<LeaderboardPlayer> getPlayers() {
+  public void savePlayer(final @NotNull LeaderboardPlayer player) {
+    players.put(player.getUuid(), player);
+  }
+
+  @Override
+  public boolean existsPlayerByUuid(final @NotNull String uuid) {
+    return players.containsKey(uuid);
+  }
+
+  @Override
+  public @NotNull Optional<LeaderboardPlayer> findPlayerByUuid(final @NotNull String uuid) {
+    return Optional.ofNullable(players.get(uuid));
+  }
+
+  @Override
+  public @NotNull Iterable<LeaderboardPlayer> findAllPlayers() {
     return players.values().stream()
       .sorted(Comparator.comparingLong(LeaderboardPlayer::getPoints).reversed())
       .toList();
   }
 
   @Override
-  public @NotNull LeaderboardPlayer addPlayer(final @NotNull String uuid) {
-    return players.computeIfAbsent(uuid, LeaderboardPlayer::of);
+  public long countPlayers() {
+    return players.size();
   }
 
   @Override
-  public @Nullable LeaderboardPlayer getPlayer(final @NotNull String uuid) {
-    return players.get(uuid);
-  }
-
-  @Override
-  public boolean hasPlayer(final @NotNull String uuid) {
-    return players.containsKey(uuid);
-  }
-
-  @Override
-  public void removePlayer(final @NotNull String uuid) {
+  public void deletePlayerByUuid(final @NotNull String uuid) {
     players.remove(uuid);
   }
 
   @Override
-  public void updatePlayer(final @NotNull LeaderboardPlayer player) {
-  }
-
-  @Override
-  public void reset() {
+  public void deleteAllPlayers() {
     players.clear();
-  }
-
-  @Override
-  public int getSize() {
-    return players.size();
   }
 }

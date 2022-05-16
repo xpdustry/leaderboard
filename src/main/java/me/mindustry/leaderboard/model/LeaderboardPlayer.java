@@ -7,11 +7,11 @@ import org.jetbrains.annotations.*;
 
 public final class LeaderboardPlayer implements Serializable, Comparable<LeaderboardPlayer> {
 
-  @java.io.Serial
-  private static final long serialVersionUID = 1L;
+  @Serial
+  private static final long serialVersionUID = 1624078426106904493L;
 
   private final String uuid;
-  private long points = 0;
+  private long points = 0L;
 
   private LeaderboardPlayer(final @NotNull String uuid) {
     this.uuid = uuid;
@@ -43,6 +43,10 @@ public final class LeaderboardPlayer implements Serializable, Comparable<Leaderb
 
   public void addPoints(final @NotNull LeaderboardPoints points) {
     addPoints(points.getPoints());
+  }
+
+  public void resetPoints() {
+    points = 0L;
   }
 
   @Override

@@ -16,7 +16,7 @@ final class SQLLeaderboard implements Leaderboard {
   private static final String DEFAULT_TABLE = "leaderboard_player";
 
   static {
-    Logger.setGlobalLogLevel(Level.ERROR);
+    com.j256.ormlite.logger.Logger.setGlobalLogLevel(Level.ERROR);
   }
 
   private final Dao<LeaderboardPlayer, String> dao;
@@ -52,48 +52,7 @@ final class SQLLeaderboard implements Leaderboard {
   }
 
   @Override
-  public @NotNull List<LeaderboardPlayer> getPlayers() {
-    try {
-      return dao.queryBuilder().orderBy("points", false).query();
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public @NotNull LeaderboardPlayer addPlayer(final @NotNull String uuid) {
-    try {
-      return dao.createIfNotExists(LeaderboardPlayer.of(uuid));
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public @Nullable LeaderboardPlayer getPlayer(final @NotNull String uuid) {
-    try {
-      return dao.queryForId(uuid);
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public boolean hasPlayer(final @NotNull String uuid) {
-    return getPlayer(uuid) != null;
-  }
-
-  @Override
-  public void removePlayer(final @NotNull String uuid) {
-    try {
-      dao.deleteById(uuid);
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public void updatePlayer(final @NotNull LeaderboardPlayer player) {
+  public void savePlayer(final @NotNull LeaderboardPlayer player) {
     try {
       dao.createOrUpdate(player);
     } catch (final SQLException e) {
@@ -102,18 +61,50 @@ final class SQLLeaderboard implements Leaderboard {
   }
 
   @Override
-  public void reset() {
+  public boolean existsPlayerByUuid(final @NotNull String uuid) {
+    return findPlayerByUuid(uuid).isPresent();
+  }
+
+  @Override
+  public @NotNull Optional<LeaderboardPlayer> findPlayerByUuid(final @NotNull String uuid) {
     try {
-      dao.deleteBuilder().delete();
+      return Optional.ofNullable(dao.queryForId(uuid));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public int getSize() {
+  public @NotNull Iterable<LeaderboardPlayer> findAllPlayers() {
     try {
-      return (int) dao.countOf();
+      return dao.queryBuilder().orderBy("points", false).query();
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public long countPlayers() {
+    try {
+      return dao.countOf();
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void deletePlayerByUuid(final @NotNull String uuid) {
+    try {
+      dao.deleteById(uuid);
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void deleteAllPlayers() {
+    try {
+      dao.deleteBuilder().delete();
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
