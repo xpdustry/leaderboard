@@ -85,7 +85,7 @@ public final class LeaderboardPlugin extends Plugin {
       player.sendMessage(Strings.format("Rank: @, Points: @", service.getRank(player), service.getPoints(player)));
     });
 
-    handler.<Player>register("lb-board", "Show the leaderboard", (args, player) -> {
+    handler.<Player>register("lb-board", "Show the top 10 of the leaderboard.", (args, player) -> {
       service.showLeaderboard(player);
     });
 

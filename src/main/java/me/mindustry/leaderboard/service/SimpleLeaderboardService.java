@@ -60,7 +60,7 @@ public class SimpleLeaderboardService implements LeaderboardService {
 
   @Override
   public void showLeaderboard(final @NotNull Player player) {
-    final var builder = new StringBuilder().append("[yellow]Leader Board:[]");
+    final var builder = new StringBuilder().append("[yellow]Leaderboard:[]");
     final var players = leaderboard.findAllPlayers().iterator();
     var rank = 1;
 
@@ -72,7 +72,7 @@ public class SimpleLeaderboardService implements LeaderboardService {
         .orElseGet(() -> Vars.netServer.admins.getInfo(leaderboardPlayer.getUuid()).lastName);
 
       builder.append("\n#").append(rank++);
-      builder.append(" [white]: ").append(name).append(" - ").append(leaderboardPlayer.getPoints());
+      builder.append(" [white]: ").append(name).append("[white] - ").append(leaderboardPlayer.getPoints());
     }
 
     Call.infoToast(player.con, builder.toString(), 10f);
