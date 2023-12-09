@@ -3,7 +3,6 @@ package me.mindustry.leaderboard;
 import arc.*;
 import arc.files.*;
 import arc.util.*;
-import fr.xpdustry.flex.*;
 import io.leangen.geantyref.*;
 import java.util.*;
 import java.util.function.*;
@@ -76,7 +75,6 @@ public final class LeaderboardPlugin extends Plugin {
     if (getConf().showLeaderboardOnJoin()) {
       Events.on(PlayerJoin.class, e -> service.showLeaderboard(e.player));
     }
-    FlexPlugin.registerFlexExtension(new LeaderboardFlexExtension(service));
   }
 
   @Override

@@ -24,20 +24,16 @@ toxopid {
 
     mindustryRepository.set(fr.xpdustry.toxopid.extension.MindustryRepository.BE)
     mindustryRuntimeVersion.set("22389")
-
-    modDependencies.set(listOf(
-        fr.xpdustry.toxopid.extension.ModDependency(
-            "Xpdustry/Flex",
-            "v0.2.0",
-            "Flex.jar"
-        ),
-    ))
 }
 
 repositories {
     mavenCentral()
-    maven("https://repo.xpdustry.fr/releases") {
-        name = "xpdustry-releases-repository"
+    maven("https://maven.xpdustry.com/releases") {
+        name = "xpdustry-releases"
+        mavenContent { releasesOnly() }
+    }
+    maven("https://maven.xpdustry.com/legacy-releases") {
+        name = "xpdustry-releases"
         mavenContent { releasesOnly() }
     }
 }
@@ -49,8 +45,6 @@ dependencies {
     // Persistent leaderboard with sqlite
     implementation("org.xerial:sqlite-jdbc:3.36.0.3")   // Driver
     implementation("com.j256.ormlite:ormlite-jdbc:6.1") // ORM
-    // Flex plugin for name prefixes
-    compileOnly("fr.xpdustry:flex:0.2.0")
 
     val junit = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junit")
