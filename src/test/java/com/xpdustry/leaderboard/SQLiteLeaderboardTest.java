@@ -23,48 +23,66 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.repository;
+package com.xpdustry.leaderboard;
 
 import arc.struct.Seq;
-import com.xpdustry.leaderboard.model.LeaderboardPlayer;
-import com.xpdustry.leaderboard.model.LeaderboardPoints;
+import fr.xpdustry.distributor.core.dependency.DependencyManager;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public final class LeaderboardTest {
+public final class SQLiteLeaderboardTest {
 
     private static final LeaderboardPoints POINTS_A = LeaderboardPoints.of("A", +100);
     private static final LeaderboardPoints POINTS_B = LeaderboardPoints.of("B", +50);
 
+    @TempDir
+    private static Path DEPENDENCY_DIR;
+
+    private static DependencyManager DEPENDENCIES;
+
     private LeaderboardPlayer playerA;
     private LeaderboardPlayer playerB;
     private LeaderboardPlayer playerC;
+    private SQLiteLeaderboard leaderboard;
 
     @TempDir
-    private Path tempDir;
+    private Path databaseDir;
+
+    @BeforeAll
+    static void init() {
+        DEPENDENCIES = new DependencyManager(DEPENDENCY_DIR);
+        DEPENDENCIES.addMavenCentral();
+    }
 
     @BeforeEach
     void setup() {
         playerA = LeaderboardPlayer.of(UUID.randomUUID().toString());
         playerB = LeaderboardPlayer.of(UUID.randomUUID().toString());
         playerC = LeaderboardPlayer.of(UUID.randomUUID().toString());
+
+        leaderboard = new SQLiteLeaderboard(databaseDir.resolve("database.sqlite"), DEPENDENCIES);
+        leaderboard.onPluginInit();
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"IN_MEMORY", "PERSISTENT"})
-    void test_leaderboard_add(final String type) {
-        final var leaderboard = getLeaderboard(type);
+    @AfterEach
+    void close() {
+        leaderboard.onPluginExit();
+    }
+
+    @Test
+    void test_leaderboard_add() {
         assertEquals(0, leaderboard.countPlayers());
 
         leaderboard.savePlayer(playerA);
@@ -79,11 +97,8 @@ public final class LeaderboardTest {
         assertEquals(2, leaderboard.countPlayers());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"IN_MEMORY", "PERSISTENT"})
-    void test_leaderboard_has_and_get(final String type) {
-        final var leaderboard = getLeaderboard(type);
-
+    @Test
+    void test_leaderboard_has_and_get() {
         assertFalse(leaderboard.existsPlayerByUuid(playerC.getUuid()));
         assertTrue(leaderboard.findPlayerByUuid(playerC.getUuid()).isEmpty());
 
@@ -94,11 +109,8 @@ public final class LeaderboardTest {
         assertEquals(playerC, leaderboard.findPlayerByUuid(playerC.getUuid()).get());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"IN_MEMORY", "PERSISTENT"})
-    void test_leaderboard_order(final String type) {
-        final var leaderboard = getLeaderboard(type);
-
+    @Test
+    void test_leaderboard_order() {
         playerA.addPoints(POINTS_B);
         leaderboard.savePlayer(playerA); // 50 points
 
@@ -113,11 +125,8 @@ public final class LeaderboardTest {
                 Seq.with(leaderboard.findAllPlayers()).list()));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"IN_MEMORY", "PERSISTENT"})
-    void test_leaderboard_delete(final String type) {
-        final var leaderboard = getLeaderboard(type);
-
+    @Test
+    void test_leaderboard_delete() {
         leaderboard.savePlayer(playerA);
         leaderboard.savePlayer(playerB);
         leaderboard.savePlayer(playerC);
@@ -128,11 +137,8 @@ public final class LeaderboardTest {
         assertTrue(Seq.with(leaderboard.findAllPlayers()).list().containsAll(List.of(playerB, playerC)));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"IN_MEMORY", "PERSISTENT"})
-    void test_leaderboard_delete_all(final String type) {
-        final var leaderboard = getLeaderboard(type);
-
+    @Test
+    void test_leaderboard_delete_all() {
         leaderboard.savePlayer(playerA);
         leaderboard.savePlayer(playerB);
         leaderboard.savePlayer(playerC);
@@ -141,15 +147,6 @@ public final class LeaderboardTest {
         leaderboard.deleteAllPlayers();
         assertEquals(0, leaderboard.countPlayers());
         assertTrue(Seq.with(leaderboard.findAllPlayers()).isEmpty());
-    }
-
-    Leaderboard getLeaderboard(final String type) {
-        return switch (type) {
-            case "IN_MEMORY" -> Leaderboard.simple();
-            case "PERSISTENT" -> Leaderboard.sqlite(
-                    tempDir.resolve("data.sqlite").toFile());
-            default -> throw new IllegalArgumentException("Unexpected leaderboard type: " + type);
-        };
     }
 
     <T> boolean areCollectionEquals(final Collection<T> collectionA, final Collection<T> collectionB) {

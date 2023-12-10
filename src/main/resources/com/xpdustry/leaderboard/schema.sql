@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS player (
+    uuid    VARCHAR(16)     NOT NULL PRIMARY KEY,
+    points  BIGINT          NOT NULL DEFAULT 0
+);

@@ -23,55 +23,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.repository;
+package com.xpdustry.leaderboard;
 
-import com.xpdustry.leaderboard.model.LeaderboardPlayer;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Collection;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class SimpleLeaderboard implements Leaderboard {
+public final class SimplePointsRegistry implements PointsRegistry {
 
-    private final Map<String, LeaderboardPlayer> players = new HashMap<>();
+    private final List<LeaderboardPoints> points;
 
-    SimpleLeaderboard() {}
-
-    @Override
-    public void savePlayer(final @NonNull LeaderboardPlayer player) {
-        players.put(player.getUuid(), player);
+    public SimplePointsRegistry(final @NonNull Collection<LeaderboardPoints> points) {
+        this.points = List.copyOf(points);
     }
 
     @Override
-    public boolean existsPlayerByUuid(final @NonNull String uuid) {
-        return players.containsKey(uuid);
-    }
-
-    @Override
-    public @NonNull Optional<LeaderboardPlayer> findPlayerByUuid(final @NonNull String uuid) {
-        return Optional.ofNullable(players.get(uuid));
-    }
-
-    @Override
-    public @NonNull Iterable<LeaderboardPlayer> findAllPlayers() {
-        return players.values().stream()
-                .sorted(Comparator.comparingLong(LeaderboardPlayer::getPoints).reversed())
-                .toList();
-    }
-
-    @Override
-    public long countPlayers() {
-        return players.size();
-    }
-
-    @Override
-    public void deletePlayerByUuid(final @NonNull String uuid) {
-        players.remove(uuid);
-    }
-
-    @Override
-    public void deleteAllPlayers() {
-        players.clear();
+    public @NonNull List<LeaderboardPoints> getLeaderboardPoints() {
+        return points;
     }
 }

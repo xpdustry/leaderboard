@@ -26,93 +26,88 @@
 package com.xpdustry.leaderboard;
 
 import arc.Events;
-import arc.files.Fi;
 import arc.util.CommandHandler;
 import arc.util.Strings;
-import com.xpdustry.leaderboard.repository.Leaderboard;
-import com.xpdustry.leaderboard.repository.PointsRegistry;
-import com.xpdustry.leaderboard.service.LeaderboardService;
+import fr.xpdustry.distributor.api.DistributorProvider;
+import fr.xpdustry.distributor.api.plugin.AbstractMindustryPlugin;
+import fr.xpdustry.distributor.core.DistributorCorePlugin;
 import io.leangen.geantyref.TypeToken;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import mindustry.Vars;
 import mindustry.game.EventType;
 import mindustry.gen.Player;
-import mindustry.mod.Plugin;
 import net.mindustry_ddns.filestore.FileStore;
 import net.mindustry_ddns.filestore.Store;
 import net.mindustry_ddns.filestore.serial.Serializers;
 import org.aeonbits.owner.ConfigFactory;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 @SuppressWarnings("unused")
-public final class LeaderboardPlugin extends Plugin {
+public final class LeaderboardPlugin extends AbstractMindustryPlugin {
 
-    private static final Fi LEADERBOARD_DIRECTORY = new Fi("./leaderboard");
-    private static final Collection<PointsRegistry> registries = new ArrayList<>();
-    private static Function<Leaderboard, LeaderboardService> leaderboardServiceFactory = LeaderboardService::simple;
-    private static Supplier<Leaderboard> customLeaderboardProvider = () -> {
-        throw new IllegalStateException("The custom leaderboard provider hasn't been set.");
+    private final List<PointsRegistry> registries = new ArrayList<>();
+    private Function<Leaderboard, LeaderboardService> leaderboardServiceProvider = LeaderboardService::simple;
+    private Supplier<Leaderboard> leaderboardProvider = () -> {
+        final var leaderboard = new SQLiteLeaderboard(
+                getDirectory().resolve("database.sqlite"),
+                ((DistributorCorePlugin) DistributorProvider.get()).getDependencyManager());
+        addListener(leaderboard);
+        return leaderboard;
     };
 
-    @SuppressWarnings("NullAway.Init")
-    private static LeaderboardService service;
+    private @MonotonicNonNull LeaderboardService service;
 
     private final Store<LeaderboardConfig> store = FileStore.of(
-            LEADERBOARD_DIRECTORY.child("config.properties").file(),
+            getDirectory().resolve("config.properties").toFile(),
             Serializers.config(),
             new TypeToken<>() {},
             ConfigFactory.create(LeaderboardConfig.class));
 
-    public static void setCustomLeaderboardProvider(
-            final @NonNull Supplier<@NonNull Leaderboard> customLeaderboardProvider) {
-        LeaderboardPlugin.customLeaderboardProvider = customLeaderboardProvider;
+    private static LeaderboardPlugin getInstance() {
+        return ((LeaderboardPlugin) Vars.mods.getMod(LeaderboardPlugin.class).main);
     }
 
-    public static Function<Leaderboard, LeaderboardService> getLeaderboardServiceFactory() {
-        return leaderboardServiceFactory;
+    public static void setLeaderboardProvider(final @NonNull Supplier<@NonNull Leaderboard> leaderboardProvider) {
+        getInstance().leaderboardProvider = leaderboardProvider;
     }
 
-    public static void setLeaderboardServiceFactory(
-            final @NonNull Function<Leaderboard, @NonNull LeaderboardService> leaderboardServiceFactory) {
-        LeaderboardPlugin.leaderboardServiceFactory = leaderboardServiceFactory;
+    public static Function<Leaderboard, LeaderboardService> getLeaderboardServiceProvider() {
+        return getInstance().leaderboardServiceProvider;
+    }
+
+    public static void setLeaderboardServiceProvider(
+            final @NonNull Function<Leaderboard, @NonNull LeaderboardService> leaderboardServiceProvider) {
+        getInstance().leaderboardServiceProvider = leaderboardServiceProvider;
     }
 
     public static void addPointsRegistry(final @NonNull PointsRegistry registry) {
-        registries.add(registry);
+        getInstance().registries.add(registry);
     }
 
-    public static Collection<PointsRegistry> getPointsRegistries() {
-        return Collections.unmodifiableCollection(registries);
+    public static List<PointsRegistry> getPointsRegistries() {
+        return Collections.unmodifiableList(getInstance().registries);
     }
 
     public static LeaderboardService getLeaderboardService() {
-        return service;
+        return getInstance().service;
     }
 
     @Override
-    public void init() {
-        LEADERBOARD_DIRECTORY.mkdirs();
+    public void onInit() {
         store.load();
-
-        final var leaderboard =
-                switch (getConf().getLeaderboardType()) {
-                    case IN_MEMORY -> Leaderboard.simple();
-                    case PERSISTENT -> Leaderboard.sqlite(
-                            LEADERBOARD_DIRECTORY.child("leaderboard.sqlite").file());
-                    case CUSTOM -> customLeaderboardProvider.get();
-                };
-
-        service = leaderboardServiceFactory.apply(leaderboard);
+        service = leaderboardServiceProvider.apply(leaderboardProvider.get());
         if (getConf().showLeaderboardOnJoin()) {
             Events.on(EventType.PlayerJoin.class, e -> service.showLeaderboard(e.player));
         }
     }
 
     @Override
-    public void registerClientCommands(final @NonNull CommandHandler handler) {
+    public void onClientCommandsRegistration(final CommandHandler handler) {
         handler.<Player>register("lb-rank", "Get your leaderboard status.", (args, player) -> {
             player.sendMessage(
                     Strings.format("Rank: @, Points: @", service.getRank(player), service.getPoints(player)));

@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.model;
+package com.xpdustry.leaderboard;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 

@@ -23,12 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.service;
+package com.xpdustry.leaderboard;
 
 import arc.util.Strings;
-import com.xpdustry.leaderboard.model.LeaderboardPlayer;
-import com.xpdustry.leaderboard.model.LeaderboardPoints;
-import com.xpdustry.leaderboard.repository.Leaderboard;
 import java.util.Optional;
 import mindustry.Vars;
 import mindustry.gen.Call;

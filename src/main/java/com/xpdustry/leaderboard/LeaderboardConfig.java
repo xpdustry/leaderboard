@@ -26,21 +26,10 @@
 package com.xpdustry.leaderboard;
 
 import org.aeonbits.owner.Accessible;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 public interface LeaderboardConfig extends Accessible {
 
-    @DefaultValue("PERSISTENT")
-    @Key("leaderboard.type")
-    @NonNull LeaderboardType getLeaderboardType();
-
     @DefaultValue("true")
-    @Key("leaderboard.player.show-on-join")
+    @Key("com.xpdustry.leaderboard.player.show-on-join")
     boolean showLeaderboardOnJoin();
-
-    enum LeaderboardType {
-        IN_MEMORY,
-        PERSISTENT,
-        CUSTOM
-    }
 }

@@ -23,23 +23,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.repository;
+package com.xpdustry.leaderboard;
 
-import com.xpdustry.leaderboard.model.LeaderboardPoints;
-import java.util.Collection;
-import java.util.Collections;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-final class SimplePointsRegistry implements PointsRegistry {
+public interface LeaderboardPoints {
 
-    private final Collection<LeaderboardPoints> points;
-
-    SimplePointsRegistry(final @NonNull Collection<LeaderboardPoints> points) {
-        this.points = points;
+    static @NonNull LeaderboardPoints of(
+            final @NonNull String name, final @NonNull String description, final long points, final boolean silent) {
+        return new SimpleLeaderboardPoints(name, description, points, silent);
     }
 
-    @Override
-    public @NonNull Collection<LeaderboardPoints> getLeaderboardPoints() {
-        return Collections.unmodifiableCollection(points);
+    static @NonNull LeaderboardPoints of(
+            final @NonNull String name, final @NonNull String description, final long points) {
+        return new SimpleLeaderboardPoints(name, description, points);
+    }
+
+    static @NonNull LeaderboardPoints of(final @NonNull String name, final long points, final boolean silent) {
+        return new SimpleLeaderboardPoints(name, points, silent);
+    }
+
+    static @NonNull LeaderboardPoints of(final @NonNull String name, final long points) {
+        return new SimpleLeaderboardPoints(name, points);
+    }
+
+    @NonNull String getName();
+
+    @NonNull String getDescription();
+
+    long getPoints();
+
+    /**
+     * Returns whether the player should be notified when getting the points or not.
+     */
+    default boolean isSilent() {
+        return false;
     }
 }

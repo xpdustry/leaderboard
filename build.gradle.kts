@@ -59,14 +59,16 @@ repositories {
 
 dependencies {
     mindustryDependencies()
-    compileOnly("fr.xpdustry:distributor-api:3.2.1")
+
+    val distributor = "3.2.1"
+    compileOnly("fr.xpdustry:distributor-api:$distributor")
+    compileOnly("fr.xpdustry:distributor-core:$distributor")
+    testImplementation("fr.xpdustry:distributor-core:$distributor")
 
     // file-store for the configuration
     implementation("net.mindustry_ddns:file-store:2.1.0")
     implementation("org.aeonbits.owner:owner-java8:1.0.12")
-    // Persistent leaderboard with sqlite
-    implementation("org.xerial:sqlite-jdbc:3.44.1.0")
-    implementation("com.j256.ormlite:ormlite-jdbc:6.1")
+    implementation("org.jdbi:jdbi3-core:3.42.0")
 
     val junit = "5.10.1"
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junit")
@@ -193,13 +195,15 @@ tasks.shadowJar {
     // WARNING: SQL drivers do not play well with shading,
     // the best solution would be to load them in an isolated classloader.
     // If it's too difficult, you can disable relocation but be aware this can conflict with other plugins.
-    // isEnableRelocation = true
+    isEnableRelocation = true
     relocationPrefix = "$rootPackage.shadow"
+    mergeServiceFiles()
     // Reduce shadow jar size by removing unused classes.
     // Warning, if one of your dependencies use service loaders or reflection, add to the exclude list
     // such as "minimize { exclude(dependency("some.group:some-dependency:.*")) }"
     minimize {
         exclude(dependency("org.xerial:sqlite-jdbc:.*"))
+        exclude(dependency("com.h2database:h2:.*"))
     }
     // Include the plugin.json file with the modified version
     doFirst {

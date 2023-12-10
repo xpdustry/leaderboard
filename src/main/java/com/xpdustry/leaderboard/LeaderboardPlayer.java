@@ -23,32 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.model;
+package com.xpdustry.leaderboard;
 
 import arc.util.Strings;
-import java.io.Serial;
-import java.io.Serializable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public final class LeaderboardPlayer implements Serializable, Comparable<LeaderboardPlayer> {
-
-    @Serial
-    private static final long serialVersionUID = 1624078426106904493L;
+public final class LeaderboardPlayer implements Comparable<LeaderboardPlayer> {
 
     private final String uuid;
     private long points = 0L;
 
     private LeaderboardPlayer(final @NonNull String uuid) {
         this.uuid = uuid;
-    }
-
-    /**
-     * No args constructor for ORMLite, <strong>DO NOT USE</strong>.
-     */
-    @SuppressWarnings("unused")
-    LeaderboardPlayer() {
-        this.uuid = "";
     }
 
     public static @NonNull LeaderboardPlayer of(final @NonNull String uuid) {

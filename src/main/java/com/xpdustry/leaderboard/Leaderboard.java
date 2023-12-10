@@ -23,40 +23,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.model;
+package com.xpdustry.leaderboard;
 
+import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public interface LeaderboardPoints {
-
-    static @NonNull LeaderboardPoints of(
-            final @NonNull String name, final @NonNull String description, final long points, final boolean silent) {
-        return new SimpleLeaderboardPoints(name, description, points, silent);
-    }
-
-    static @NonNull LeaderboardPoints of(
-            final @NonNull String name, final @NonNull String description, final long points) {
-        return new SimpleLeaderboardPoints(name, description, points);
-    }
-
-    static @NonNull LeaderboardPoints of(final @NonNull String name, final long points, final boolean silent) {
-        return new SimpleLeaderboardPoints(name, points, silent);
-    }
-
-    static @NonNull LeaderboardPoints of(final @NonNull String name, final long points) {
-        return new SimpleLeaderboardPoints(name, points);
-    }
-
-    @NonNull String getName();
-
-    @NonNull String getDescription();
-
-    long getPoints();
+public interface Leaderboard {
 
     /**
-     * Returns whether the player should be notified when getting the points or not.
+     * Saves the leaderboard player.
+     *
+     * @param player the leaderboard player
      */
-    default boolean isSilent() {
-        return false;
-    }
+    void savePlayer(final @NonNull LeaderboardPlayer player);
+
+    boolean existsPlayerByUuid(final @NonNull String uuid);
+
+    /**
+     * Searches for the uuid of a leaderboard player.
+     *
+     * @param uuid the uuid of the leaderboard player
+     * @return an optional encapsulating the leaderboard player
+     */
+    @NonNull Optional<LeaderboardPlayer> findPlayerByUuid(final @NonNull String uuid);
+
+    /**
+     * Returns an ordered iterable of the leaderboard players from the highest score to the lowest.
+     */
+    @NonNull Iterable<LeaderboardPlayer> findAllPlayers();
+
+    long countPlayers();
+
+    void deletePlayerByUuid(final @NonNull String uuid);
+
+    void deleteAllPlayers();
 }

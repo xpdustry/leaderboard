@@ -23,36 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.xpdustry.leaderboard.service;
+package com.xpdustry.leaderboard;
 
-import com.xpdustry.leaderboard.model.LeaderboardPoints;
-import com.xpdustry.leaderboard.repository.Leaderboard;
-import mindustry.gen.Player;
+import java.util.Collection;
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public interface LeaderboardService {
+public interface PointsRegistry {
 
-    static @NonNull LeaderboardService simple(final @NonNull Leaderboard leaderboard) {
-        return new SimpleLeaderboardService(leaderboard);
+    static @NonNull PointsRegistry of(final @NonNull LeaderboardPoints... points) {
+        return new SimplePointsRegistry(List.of(points));
     }
 
-    long getPoints(final @NonNull String uuid);
-
-    default long getPoints(final @NonNull Player player) {
-        return getPoints(player.uuid());
-    }
-
-    void grantPoints(final @NonNull String uuid, final @NonNull LeaderboardPoints points);
-
-    default void grantPoints(final @NonNull Player player, final @NonNull LeaderboardPoints points) {
-        grantPoints(player.uuid(), points);
-    }
-
-    long getRank(final @NonNull String uuid);
-
-    default long getRank(final @NonNull Player player) {
-        return getRank(player.uuid());
-    }
-
-    void showLeaderboard(final @NonNull Player player);
+    @NonNull Collection<LeaderboardPoints> getLeaderboardPoints();
 }
