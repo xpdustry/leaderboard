@@ -1,11 +1,21 @@
-# OmegaLeaderboardPlugin
+# leaderboard
 
 [![Build](https://github.com/xpdustry/leaderboard/actions/workflows/build.yml/badge.svg)](https://github.com/Xpdustry/OmegaLeaderboardPlugin/actions/workflows/build.yml)
 [![Mindustry 7.0 ](https://img.shields.io/badge/Mindustry-7.0-ffd37f)](https://github.com/Anuken/Mindustry/releases)
 
 ## Description
 
-Leaderboard plugin for Omega servers.
+A leaderboard plugin I wrote for Omega servers, now public.
+
+## Installation
+
+This plugin requires :
+
+- Java 17 or above.
+
+- Mindustry v146 or above.
+
+- [Distributor](https://github.com/xpdustry/distributor) v3.2.1.
 
 ## Building
 
@@ -18,9 +28,3 @@ Leaderboard plugin for Omega servers.
 - `./gradlew runMindustryClient`: Run Mindustry in desktop with the plugin.
 
 - `./gradlew runMindustryServer`: Run Mindustry in a server with the plugin.
-
-## Running
-
-This plugin is compatible with V6 and V7, but it requires [Flex](https://github.com/Xpdustry/Flex) as dependency.
-
-> If you run Mindustry below v136, you will need an additional mod called [mod-loader](https://github.com/Xpdustry/ModLoaderPlugin) for the dependency resolution.
